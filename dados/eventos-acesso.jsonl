@@ -1,0 +1,9 @@
+{"id": "a-001", "tipo": "acesso", "cartao": "C-101", "porta": "PORTA-A", "datahora": "2026-10-01T08:06:07"}
+{"id": "a-002", "tipo": "acesso", "cartao": "C-102", "porta": "PORTA-A", "datahora": "2026-10-01T08:16:07"}
+{"id": "a-010", "tipo": "acesso", "cartao": "C-100", "porta": "PORTA-A", "datahora": "2026-10-01T08:10:47"}
+{"id": "a-011", "tipo": "acesso", "cartao": "C-100", "porta": "PORTA-B", "datahora": "2026-10-01T08:12:17"}
+{"id": "a-020", "tipo": "porta-forcada", "cartao": "", "porta": "PORTA-C", "datahora": "2026-10-01T08:20:57"}
+{"id": "a-030", "tipo": "acesso", "cartao": "C-103", "porta": "PORTA-A", "datahora": "2026-10-01T03:14:47"}
+{"id": "a-040", "tipo": "acesso", "cartao": "C-104", "porta": "PORTA-B", "datahora": "2026-10-01T08:21:27"}
+{"id": "a-050", "tipo": "acesso", "cartao": "C-105", "porta": "PORTA-A", "datahora": "2026-10-01T08:40:47"}
+{"id": "a-051", "tipo": "acesso", "cartao": "C-106", "porta": "PORTA-B", "datahora": "2026-10-01T08:50:47"}

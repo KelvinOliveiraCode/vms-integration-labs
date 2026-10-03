@@ -1,0 +1,24 @@
+# Regras de incidente do laboratorio.
+#
+# Cada regra tem janela em segundos e severidade. Janela curta demais
+# perde o incidente; longa demais junta o que nao tem a ver. Os numeros
+# abaixo sao os que separam os 4 plantados da rotina sem cruzar.
+
+janela_horario: [6, 22]
+
+regras:
+  - id: badge-clonado
+    descricao: mesmo cartao em dois lugares em menos de 120 segundos
+    janela_s: 120
+    severidade: alta
+  - id: porta-forcada
+    descricao: abertura sem cartao nos 5 minutos anteriores
+    janela_s: 300
+    severidade: alta
+  - id: fora-de-horario
+    descricao: acesso fora da janela 06:00-22:00
+    severidade: media
+  - id: camera-offline
+    descricao: acesso numa zona cuja camera esta offline
+    janela_s: 300
+    severidade: media

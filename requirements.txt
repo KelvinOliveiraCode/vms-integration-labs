@@ -1,0 +1,4 @@
+# Zero dependencia de execucao: so biblioteca padrao.
+# Dependencias de desenvolvimento.
+pytest>=7.4
+pytest-cov>=4.1
