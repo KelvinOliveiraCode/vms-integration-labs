@@ -1,41 +1,92 @@
-# A Trilha de Auditoria: por que o log precisa ser append-only
+# Trilha de auditoria: por que o log precisa ser append-only
 
-## 1. Por que o log precisa ser append-only: editar passado é reescrever história
+Um log de segurança é um registro de fatos: quando uma porta é forçada ou um
+cartão é lido, o evento já aconteceu. A função do log é preservar o ocorrido,
+não o que os participantes gostariam que tivesse ocorrido.
 
-Um log de segurança é, antes de qualquer outra coisa, um registro de fatos: quando uma porta é forçada, um cartão é lido ou uma câmera registra movimento, o evento já aconteceu. A função do log é preservar o que ocorreu, não o que os participantes gostariam que tivesse ocorrido.
+## 1. Por que append-only: editar passado é reescrever história
 
-Se o arquivo permite edição em posições arbitrárias — apagar linhas, sobrescrever carimbos, inserir ocorrências em tempo real para preencher buracos —, cada um com privilégio de escrita pode alterar a narrativa. O log editável deixa de ser evidência e vira um rascunho compartilhado, cujo conteúdo final depende de quem escreveu por último e não do que aconteceu de fato.
+Se o arquivo permite apagar linhas ou sobrescrever carimbos, quem tem escrita
+pode alterar a narrativa. O log editável deixa de ser evidência e vira
+rascunho compartilhado, cujo conteúdo final depende de quem escreveu por
+último.
 
-Essa diferença separa uma conclusão correta de uma equivocada. O próprio ambiente de laboratório ilustra o risco: dois sistemas registram os mesmos fenômenos físicos, mas com relógios diferentes. O VMS carimba em segundos desde a época; o controle de acesso carimba em formato ISO, e os dois relógios não andam juntos — o acesso está 47 segundos adiantado em relação ao VMS. Sem essa constatação, a conclusão sobre a mesma sequência seria "a câmera viu antes do cartão passar"; com ela, passa a ser "o cartão passou na porta e a câmera viu". Quarenta e sete segundos são a diferença entre conclusões opostas sobre o mesmo fato, uma ambiguidade que nasce da medição, sem que ninguém precise adulterar nada. Se o log fosse editável, o risco adicional seria ajustar carimbos para "esquecer" o deslocamento ou aproximar ou distanciar ocorrências do que estavam. O append-only elimina essa via: uma vez gravado, um registro não pode ser reescrito, substituído ou movido. Qualquer mudança só pode aparecer como um novo registro, que carimba o momento em que foi feito — e esse carimbo também fica imutável. O append-only, portanto, não protege contra erro humano isolado, mas impede que uma edição localizada reescreva a história em escala.
+O laboratório ilustra o risco sem precisar de adulteração: dois sistemas
+registram os mesmos fenômenos com relógios diferentes — o acesso anda 47
+segundos adiantado. Sem essa constatação, a conclusão seria "a câmera viu
+antes do cartão passar"; com ela, é o oposto. Quarenta e sete segundos separam
+conclusões opostas sobre o mesmo fato. Se o log fosse editável, o risco
+adicional seria ajustar carimbos para "esquecer" o deslocamento. O append-only
+elimina essa via: mudança só aparece como registro novo, com carimbo próprio
+também imutável.
 
-## 2. Hash encadeado: como cada registro amarra o anterior e alterar um byte invalida a cadeia
+    Editar um registro antigo não é um detalhe operacional: é reescrever o
+    passado. Em um incidente de porta forçada, mudar o carimbo de um evento
+    atrasa ou acelera toda a sequência; o que era um acesso legítimo pode virar
+    invasão, ou vice-versa. O append-only torna impossível esse truque. Se é
+    preciso admitir algo novo, escreve-se outro registro, e o próprio ato de
+    escrever recebe um carimbo que, por sua vez, também não pode ser apagado. A
+    história só se modifica pelo acúmulo de registros, nunca pela correção de
+    linhas.
 
-Append-only é a condição necessária para uma trilha confiável, mas por si só não prova que os dados gravados são os originais. Para isso, usa-se um hash encadeado: cada registro guarda, além do seu conteúdo, o resumo criptográfico — o hash — do registro imediatamente anterior, repetindo-se a partir de um estado inicial conhecido e assinado.
+## 2. Hash encadeado: cada registro amarra o anterior
 
-Isso cria uma corrente em que a integridade de qualquer linha depende da de todas as anteriores. O hash é uma função de mão única: a partir do conteúdo anterior obtém-se um resumo determinístico, mas não é possível reverter o resumo nem produzir outro conteúdo que gere o mesmo resumo. Se alguém alterar um único bit em um registro histórico — um carimbo, um identificador, uma palavra — o hash daquele registro muda completamente. Como o registro seguinte guarda esse hash antigo como referência, a mudança se propaga até o fim da sequência.
+Append-only impede reescrita, mas não prova que o gravado é o original. Para
+isso, cada registro guarda o hash do anterior, a partir de um estado inicial
+conhecido.
 
-A consequência é que a cadeia não admite "uma alteração silenciosa": qualquer modificação localizada quebra o encadeamento a partir do ponto da alteração, e a discordância corre até o final. O auditor descobre onde a corrente se rompe e sabe exatamente em que ponto a confiança começou a falhar. Esse comportamento permite ainda distinguir "o log foi alterado" de "o log foi corrompido acidentalmente": ambos geram quebra no encadeamento, e apenas um envolve intenção. Em um ambiente com dois relógios, o efeito protetor é particularmente valioso: como o alinhamento dos tempos depende de um deslocamento conhecido vindo da topologia e não dos próprios eventos, o log precisa guardar também a versão desse ajuste. Quem reescrevesse o log sem o encadeamento poderia apagar a constatação dos 47 segundos e induzir correlações falsas; com o encadeamento, o registro dessa constatação também fica sob proteção.
+A função hash é de mão única: o conteúdo gera o resumo, mas o resumo não
+devolve o conteúdo, e é praticamente impossível produzir dois conteúdos
+distintos com o mesmo resumo. Alterar um único byte no registro — um carimbo,
+um identificador, uma palavra — não ajusta o hash em um ponto qualquer:
+produz um resumo totalmente novo, sem relação visível com o anterior. Como
+cada sucessor guarda o hash do antecessor, esse novo resumo já não bate com
+o esperado pelo próximo registro, e a discordância se arrasta até o último.
+A proteção não depende de guardar um log à parte; depende de cada linha
+validar a anterior.
 
-## 3. Como verificar integridade sem ferramenta paga: recalcular do zero e comparar
+Alterar um bit em qualquer registro muda seu hash, e como o seguinte guarda o
+antigo como referência, a quebra se propaga até o fim. Não existe "alteração
+silenciosa": o auditor descobre onde a corrente se rompe e sabe em que ponto a
+confiança falhou. O relatório não diz "o log está corrompido"; diz "entre o
+registro N e o N+1 a corrente se rompe", que é informação acionável.
 
-A grande vantagem do hash encadeado é que ele não exige licença de software, assinatura de serviço ou produto comercial para ser auditado. A verificação consiste em três passos simples e reproduzíveis.
+Isso permite distinguir "o log foi alterado" de "o log foi corrompido
+acidentalmente": ambos quebram o encadeamento, e só um envolve intenção. A
+distinção importa porque a resposta é diferente — investigação num caso,
+recuperação de backup no outro — e sem a localização exata da quebra as duas
+respostas começam no escuro.
 
-Primeiro, escolher um estado inicial. Um valor genérico e explícito — por exemplo, o hash de uma string vazia, seguido de uma assinatura manual desse estado — define o ponto de partida. Sem esse ponto de partida acordado, toda a cadeia seria válida e, portanto, não valeria nada.
+O efeito protetor vale também para o alinhamento: como os 47 segundos vêm da
+topologia e não dos eventos, quem reescrevesse o log poderia apagar essa
+constatação e induzir correlações falsas. Com o encadeamento, o registro do
+ajuste também fica protegido.
 
-Segundo, percorrer o arquivo linha a linha, do começo ao fim, aplicando a mesma função hash a cada bloco e comparando o resultado com o hash que o bloco seguinte declara conter. A função deve ser pública e verificável: o mesmo algoritmo e as mesmas regras de empacotamento produzem o mesmo resumo em qualquer máquina.
+## 3. Verificar sem ferramenta paga: recalcular e comparar
 
-Terceiro, declarar o resultado. Se o último bloco do arquivo leva, passo a passo, ao estado final esperado, o log é íntegro. Se em algum ponto o recálculo diverge do hash declarado, o auditor para ali e relata exatamente onde a quebra ocorreu: o relatório não diz "o log está corrompido"; diz "entre o registro N e o registro N+1 a corrente se rompe", o que é informação acionável.
+Três passos, sem licença nem produto comercial. Primeiro, um estado inicial
+acordado — por exemplo, o hash de string vazia com assinatura manual. Sem
+ponto de partida, toda cadeia seria válida e não valeria nada. Segundo,
+percorrer linha a linha aplicando a mesma função hash pública e comparando
+com o hash que o bloco seguinte declara: mesmo algoritmo e mesmo
+empacotamento produzem o mesmo resumo em qualquer máquina. Terceiro, declarar
+onde quebrou, se quebrou.
 
-Essa abordagem é transparente o suficiente para o auditor rodar a própria verificação em vez de confiar em terceiros. Não há caixa-preta, não há binary proprietário e não há promessa de fornecedor. Cada linha de raciocínio é visível: qual é o algoritmo, qual é o estado inicial, quais bytes entram em cada cálculo. O custo de verificar um log inteiro é praticamente nulo — um laço simples sobre um arquivo de texto. Qualquer script básico, feito a partir de funções já disponíveis no sistema operacional, realiza essa verificação sem aquisição adicional. O resultado não é "confiança zero" nem "confiança total": o auditor sabe exatamente quantos registros estão abaixo da quebra conhecida e quantos permanecem dentro da corrente preservada. Isso é suficiente para tomar decisões em um incidente e é melhor do que o log editável, onde a integridade é uma aposta sobre a boa-fé de quem tem acesso de escrita.
+O custo é um laço sobre arquivo de texto, com funções do próprio sistema. Não
+há caixa-preta: algoritmo, estado inicial e empacotamento são visíveis. O
+resultado não é "confiança total": o auditor sabe quantos registros estão
+abaixo da quebra e quantos permanecem na corrente — suficiente para decidir
+num incidente.
 
-## 4. O que append-only não resolve: não impede omissão nem atraso
+## 4. O que append-only não resolve: omissão nem atraso
 
-Append-only resolve um problema preciso: impede que um registro gravado seja reescrito ou apagado após a gravação. Ele não resolve os problemas de omissão e de atraso, que são de natureza diferente e exigem outras defesas.
+Append-only impede reescrever, não impede omitir. Um evento nunca registrado
+não quebra cadeia nenhuma — e é por isso que a trilha precisa de
+completude verificável por fora, como contadores de sequência sem buraco.
 
-A omissão ocorre quando um evento nunca é registrado. Se um atacante tem acesso ao agente que produz eventos, ele pode interromper a produção ou descartar os eventos mais incômodos antes que cheguem ao log. Nenhum mecanismo de hash encadeado detecta isso, porque a cadeia está perfeitamente íntegra do começo ao fim — ela apenas nunca foi alimentada com aquele evento. O append-only protege o que existe; não protege o que não existe.
+Também não impede atraso: registro gravado horas depois carimba a hora da
+gravação, não a do fato. Em incidente com dois relógios, atraso e deslocamento
+se confundem, e só a disciplina de gravar na hora separa um do outro.
 
-O atraso ocorre quando um evento é registrado, mas só aparece muito depois. Um registrador que armazena localmente e sincroniza quando a rede volta pode entregar uma rajada de eventos com carimbos antigos. Para um auditor que busca linhas de tempo, essa rajada pode parecer uma reescrita do passado. A cadeia continua válida, porque cada registro contém o hash correto do anterior. O que não é visível pelo encadeamento é o intervalo de silêncio entre a gravação no sistema de origem e a chegada ao log.
-
-A omissão e o atraso são atenuados por outras medidas: replicação imediata para um repositório de log sob controle de outra conta, verificação de continuidade numérica de sequências, carimbos de recebimento separados dos carimbos de ocorrência e monitoramento do estado dos próprios registradores de evento. Em um ambiente com dois relógios como o descrito, uma medida adicional é comparar o ritmo esperado de eventos em cada origem com o ritmo efetivo no log consolidado; um ritmo que para subitamente indica omissão, e um ritmo que volta todos de uma vez indica atraso.
-
-Em suma, append-only é a base — a condição sobre a qual hash encadeado, verificação recorrente e carimbos de recebimento fazem o resto do trabalho. Não é a defesa completa, mas é a que sustenta todas as outras: sem ela, nada do que vem depois tem para quem dizer.
+O append-only é condição necessária, não suficiente. Ele garante que o que
+está no log não foi alterado; não garante que tudo que aconteceu está no log.
