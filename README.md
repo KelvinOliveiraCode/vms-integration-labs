@@ -118,7 +118,7 @@ adulteração é decoração.
 python -m pytest -v
 ```
 
-41 testes, 94% de cobertura. Cobrem normalização e alinhamento, correlação,
+41 testes, 93% de cobertura. Cobrem normalização e alinhamento, correlação,
 os 4 incidentes cada um pela sua regra, a trilha íntegra e adulterada, e a
 CLI.
 
