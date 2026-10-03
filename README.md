@@ -72,7 +72,7 @@ cadeia integra: nenhum registro adulterado
 Rodar sem instalar (útil para conferência rápida):
 
 ```powershell
-$env:PYTHONPATH="C:\Users\Kelvin\Desktop\portfolio-24\vms-integration-labs\src"; python -m vmslabs correlacionar dados/eventos-vms.jsonl dados/eventos-acesso.jsonl --regras dados/regras-incidente.yaml
+$env:PYTHONPATH="$PWD\src"; python -m vmslabs correlacionar dados/eventos-vms.jsonl dados/eventos-acesso.jsonl --regras dados/regras-incidente.yaml
 ```
 
 Instalação:
@@ -207,7 +207,7 @@ cadeia integra: nenhum registro adulterado
 Run without installing (quick check):
 
 ```powershell
-$env:PYTHONPATH="C:\Users\Kelvin\Desktop\portfolio-24\vms-integration-labs\src"; python -m vmslabs correlacionar dados/eventos-vms.jsonl dados/eventos-acesso.jsonl --regras dados/regras-incidente.yaml
+$env:PYTHONPATH="$PWD\src"; python -m vmslabs correlacionar dados/eventos-vms.jsonl dados/eventos-acesso.jsonl --regras dados/regras-incidente.yaml
 ```
 
 ### The 4 incidents
