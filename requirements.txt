@@ -1,4 +1,6 @@
-# Zero dependencia de execucao: so biblioteca padrao.
+# Dependencia de execucao: leitura de YAML (gratuita, instala no Windows).
+PyYAML>=6.0
+
 # Dependencias de desenvolvimento.
 pytest>=7.4
 pytest-cov>=4.1
