@@ -37,14 +37,23 @@ jobs:
       - name: Prova de aceite
         run: python tools/verificar_aceite.py
 
+      # Duas coisas do runner do GitHub brigam com o passo abaixo, e as duas
+      # precisam ser neutralizadas:
+      # 1) no pwsh 7.4+, `PSNativeCommandUseErrorActionPreference` faz um
+      #    comando nativo com codigo != 0 virar erro terminante e abortar o
+      #    passo antes do `if` que confere o codigo;
+      # 2) o runner fecha o passo com `exit $LASTEXITCODE`, entao o codigo 1
+      #    esperado da CLI viraria o codigo do passo.
       - name: O fluxo detecta os incidentes com saida diferente de zero
         run: |
+          $PSNativeCommandUseErrorActionPreference = $false
           python -m vmslabs correlacionar dados/eventos-vms.jsonl dados/eventos-acesso.jsonl --regras dados/regras-incidente.yaml
           if ($LASTEXITCODE -eq 0) {
             Write-Error "havendo incidente, o CLI deveria sair com 1"
             exit 1
           }
           Write-Output "ok: incidentes sinalizados com codigo diferente de zero"
+          exit 0
 
       - name: O exemplo esta atualizado
         run: |
