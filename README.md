@@ -1,5 +1,19 @@
 # vms-integration-labs
 
+<div align="center">
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/tests-41%20passing-brightgreen?style=flat-square" alt="Tests">
+  <img src="https://img.shields.io/badge/coverage-93%25-green?style=flat-square" alt="Coverage">
+  <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square" alt="Windows">
+  <img src="https://img.shields.io/badge/deps-PyYAML%20only-blue?style=flat-square" alt="Deps">
+</p>
+
+</div>
+
+
 Integração simulada entre CFTV e controle de acesso: fluxo de evento, trilha
 de auditoria com hash encadeado e correlação de incidente.
 
