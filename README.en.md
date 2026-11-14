@@ -1,118 +1,98 @@
 # vms-integration-labs
 
-<div align="center">
-
 **English** · [Português (Brasil)](README.md)
 
-</div>
-
-[![Python 3](https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/) [![pandas](https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas)](https://pandas.pydata.org/) [![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest)](https://docs.pytest.org/) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
-
-### Laboratorio de integracao VMS: incidentes correlacionados e trilha append-only com hash
-
----
+[![Python 3](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](#) [![PyYAML](https://img.shields.io/badge/PyYAML-only%20dep-3776AB?style=flat-square)](#) [![pytest](https://img.shields.io/badge/pytest-41%20tests-0A9EDC?style=flat-square&logo=pytest)](#) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
 
 ## What it is
 
-Laboratorio de integracao VMS: incidentes correlacionados e trilha append-only com hash
+**A VMS integration lab** (Video Management System): it imports logs from **cameras and access control** events, **normalises** them, **audits** with a linked hash chain (merkle-like), **correlates** access × camera and **detects incidents** by rules (e.g. door access without a matching camera feed, duplicate cards in the same period). It is an educational physical-security lab.
 
----
+## Status
 
-## Quick Start
+An educational lab, working and tested (41 tests).
 
-```bash
-# Clone and enter
-git clone https://github.com/KelvinOliveiraCode/<repo>.git
-cd <repo>
+## Features
 
-# Install dependencies
-# No requirements.txt detected
+- **Events** (`eventos.py`): `normalizar(raw_event, "vms"|"acesso")` → a standardised `Evento`; `carregar(path, system)`.
+- **Audit** (`auditoria.py`): a trail with `acrescentar` (previous hash + current record chained), `verificar` (integrity), `montar` (converts event list into a trail).
+- **Correlation** (`correlacao.py`): `pares_por_cartao`, `correlacionar` (crosses access × VMS), `acessos_sem_camera`, `cartoes_duplicados`.
+- **Incidents** (`incidentes.py`): `RegraIncidente` loaded from YAML, `detectar(rules, events)` → `Incidente`.
+- **CLI** (`vmslabs`): `correlacionar` and `auditar`.
 
-# Run the project
-python main.py
+## Architecture
 
-# Run tests
-pytest
+A `vmslabs` package with `eventos` (normalisation/load), `auditoria` (hash chain), `correlacao` (access×VMS cross) and `incidentes` (YAML rules).
+
+```mermaid
+flowchart LR
+    CS[VMS log] --> EV[eventos - normalise]
+    AC[access log] --> EV
+    EV --> AUD[auditoria - hash chain]
+    EV --> COR[correlation - access x camera]
+    COR --> INC[incidents - rules]
+    CLI[vmslabs auditar/correlacionar] --> EV
 ```
 
-## How it works
+## Stack
 
-Estrutura limpa e modular com separação de responsabilidades.
+- Python ≥ 3.10
+- PyYAML ≥ 6.0 (only dependency)
+- pytest (dev)
 
----
+## Repository layout
 
-## Capabilities
+```
+vms-integration-labs/
+├── pyproject.toml · BRIEF.md
+├── src/vmslabs/
+│   ├── eventos.py     # normalisation + log load
+│   ├── auditoria.py   # linked hash chain
+│   ├── correlacao.py  # access × camera
+│   ├── incidentes.py  # rule-based detection
+│   └── cli.py · __main__.py
+├── dados/             # sample logs
+├── tests/             # 41 tests
+└── LICENSE            # MIT
+```
 
-| Capacidade | Descrição |
-|------------|-------------|
-| Carregamento de Dados | Auto-download do TensorFlow creditcard.csv (284k transações) com cache local |
-| EDA e Visualização | Distribuição de classes, histogramas de Amount, heatmaps de correlação (matplotlib/seaborn) |
-| Pré-processamento | RobustScaler em Amount/Time, split estratificado, remoção de duplicatas |
-| Balanceamento | SMOTE oversampling (fallback: class_weight="balanced") |
-| Modelagem | LogisticRegression, RandomForest, ExtraTrees com RandomizedSearchCV (StratifiedKFold) |
-| Métricas | Accuracy, Precision, Recall, F1, ROC AUC, Specificity, Confusion Matrix |
-| Seleção | Score ponderado: Recall 40% + F1 30% + Precision 20% + Accuracy 10% |
-| Persistência | Serialização joblib para modelo, scaler e resultados completos |
+## Prerequisites and installation
 
+```bash
+pip install -e .
+```
 
----
+## How to run
 
+```bash
+vmslabs auditar dados/
+vmslabs correlacionar dados/
+```
 
+## Tests and quality
 
----
+Real command (verified by the agent):
 
-## FAQ
+```bash
+PYTHONPATH=src python -m pytest tests/
+# 41 passed
+```
 
-<details>
-<summary><strong>What is this project?</strong></summary>
+## Technical decisions and trade-offs
 
-A Python study/project demonstrating core concepts.
+- **Linked hash chain** (previous hash + record): auditable integrity proving event consistency.
+- **Card-based correlation**: access × camera in the same period; `acessos_sem_camera` and `cartoes_duplicados` are practical physical-security detections.
+- **Sample logs in dados/**: ready to test without real equipment.
 
-</details>
+## Known limitations and roadmap
 
-<details>
-<summary><strong>How do I run it?</strong></summary>
+- Static sample logs — no real VMS or turnstile connection.
+- Simple YAML incident rules; no video analysis (motion, face).
 
-See [Quick Start](#quick-start) for copy-paste commands.
+## Development process
 
-</details>
+An individual project by Kelvin Oliveira, built with orchestrated AI agents and reviewed by the author.
 
-<details>
-<summary><strong>Are there tests?</strong></summary>
+## License and author
 
-No automated tests in this repository.
-
-</details>
-
-<details>
-<summary><strong>Can I use this in production?</strong></summary>
-
-This is a **study/portfolio project**. Review and harden (auth, persistence, monitoring, etc.) before production use.
-
-</details>
-
-
-
----
-
-## Documentation
-
-- **Source Code** ,  Browse the `src/` directory for implementation details
-- **API Reference** ,  Inline docstrings + type hints
-- **Architecture Diagram** ,  See [architecture.mermaid](docs/architecture.mermaid) (if present)
-- **Changelog** ,  [CHANGELOG.md](CHANGELOG.md) (if present)
-- **Contributing** ,  [CONTRIBUTING.md](CONTRIBUTING.md) (if present)
-
-## License
-
-[MIT](LICENSE) ,  Kelvin Oliveira
-
----
-
-<div align="center">
-
-**Built with** · Python 3 + scikit-learn + pandas
-
-**Author** · [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
-
-</div>
+MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira. Author: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
