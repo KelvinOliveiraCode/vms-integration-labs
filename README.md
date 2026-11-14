@@ -42,7 +42,7 @@ flowchart LR
 
 ## Estrutura do repositório
 
-```
+```text
 vms-integration-labs/
 ├── pyproject.toml · BRIEF.md
 ├── src/vmslabs/
@@ -81,12 +81,12 @@ PYTHONPATH=src python -m pytest tests/
 ## Decisões técnicas e trade-offs
 
 - **Trilha hash encadeada** (hash anterior + registro): integridade auditável entrega prova de consistência dos eventos.
-- **Correlação por cartão**: acesso × câmera no mesmo período; `acessos_sem_camera` e `cartoes_duplicados` são detecções práticas de segurança física.
-- **Logs de exemplo em dados/**: pronto para testar sem equipamento real.
+- Correlação por cartão: acesso × câmera no mesmo período; `acessos_sem_camera` e `cartoes_duplicados` são detecções práticas de segurança física.
+- Logs de exemplo em dados/: pronto para testar sem equipamento real.
 
 ## Limitações conhecidas e roadmap
 
-- Logs estáticos (exemplos) — sem conexão real com VMS ou catraca.
+- Logs estáticos (exemplos), sem conexão real com VMS ou catraca.
 - Regras de incidente simples (YAML); não cobre análise de vídeo (motion, rosto).
 
 ## Processo de desenvolvimento
@@ -95,4 +95,4 @@ Projeto individual de Kelvin Oliveira, construído com agentes de IA orquestrado
 
 ## Licença e autor
 
-MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira. Autor: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfólio](https://kelvinoliveiracode.github.io/portfolio/)
+MIT. Copyright (c) 2026 Kelvin Rebelo de Oliveira. Autor: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfólio](https://kelvinoliveiracode.github.io/portfolio/)

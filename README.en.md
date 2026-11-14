@@ -42,7 +42,7 @@ flowchart LR
 
 ## Repository layout
 
-```
+```text
 vms-integration-labs/
 ├── pyproject.toml · BRIEF.md
 ├── src/vmslabs/
@@ -81,12 +81,12 @@ PYTHONPATH=src python -m pytest tests/
 ## Technical decisions and trade-offs
 
 - **Linked hash chain** (previous hash + record): auditable integrity proving event consistency.
-- **Card-based correlation**: access × camera in the same period; `acessos_sem_camera` and `cartoes_duplicados` are practical physical-security detections.
-- **Sample logs in dados/**: ready to test without real equipment.
+- Card-based correlation: access × camera in the same period; `acessos_sem_camera` and `cartoes_duplicados` are practical physical-security detections.
+- Sample logs in dados/: ready to test without real equipment.
 
 ## Known limitations and roadmap
 
-- Static sample logs — no real VMS or turnstile connection.
+- Static sample logs, no real VMS or turnstile connection.
 - Simple YAML incident rules; no video analysis (motion, face).
 
 ## Development process
@@ -95,4 +95,4 @@ An individual project by Kelvin Oliveira, built with orchestrated AI agents and 
 
 ## License and author
 
-MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira. Author: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
+MIT. Copyright (c) 2026 Kelvin Rebelo de Oliveira. Author: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
